@@ -2,6 +2,7 @@
 const models = require('../models');
 
 const Cat = models.Cat.CatModel;
+const Dog = models.Dog.DogModel;
 
 // default fake data so that we have something to work with until we make a real Cat
 const defaultData = {
@@ -21,6 +22,10 @@ const hostIndex = (req, res) => {
 
 const readAllCats = (req, res, callback) => {
   Cat.find(callback).lean();
+};
+
+const readAllDogs = (req, res, callback) => {
+  Dog.find(callback).lean();
 };
 
 const readCat = (req, res) => {
@@ -56,6 +61,19 @@ const hostPage2 = (req, res) => {
 
 const hostPage3 = (req, res) => {
   res.render('page3');
+};
+
+const hostPage4 = (req, res) => {
+  const callback = (err, docs) => {
+    if (err) {
+      return res.status(500).json({ err });
+    }
+    return res.render('page4', {
+      dogs: docs,
+    });
+  };
+
+  readAllDogs(req, res, callback);
 };
 
 const getName = (req, res) => {
@@ -94,6 +112,36 @@ const setName = (req, res) => {
   return res;
 };
 
+const setDogName = (req, res) => {
+  if (!req.body.name || !req.body.breed || !req.body.age) {
+    return res.status(400).json({ error: 'name,breed and age are all required' });
+  }
+
+  const dogData = {
+    name: req.body.name,
+    breed: req.body.breed,
+    age: req.body.age,
+  };
+
+  const newDog = new Dog(dogData);
+
+  const savePromise = newDog.save();
+
+  savePromise.then(() => {
+    res.json({
+      name: newDog.name,
+      breed: newDog.breed,
+      age: newDog.age,
+    });
+  });
+
+  savePromise.catch((err) => {
+    res.status(500).json(err);
+  });
+
+  return res;
+};
+
 const searchName = (req, res) => {
   if (!req.query.name) {
     return res.status(400).json({ error: 'Name is required to perform a search' });
@@ -111,6 +159,31 @@ const searchName = (req, res) => {
     return res.json({
       name: doc.name,
       beds: doc.bedsOwned,
+    });
+  });
+};
+
+const updateDogByName = (req, res) => {
+  console.log(req.body);
+  if (!req.body.name) {
+    return res.status(400).json({ error: 'Name is required to perform a search' });
+  }
+
+  return Dog.findByName(req.body.name, (err, doc) => {
+    if (err) {
+      return res.status(500).json({ err });
+    }
+
+    if (!doc) {
+      return res.json({ error: 'No Dogs Found!' });
+    }
+
+    const dog = doc;
+    dog.age++;
+    return dog.save().then((result) => {
+      res.json(result);
+    }).catch((error) => {
+      res.status(500).json(error);
     });
   });
 };
@@ -142,10 +215,13 @@ module.exports = {
   page1: hostPage1,
   page2: hostPage2,
   page3: hostPage3,
+  page4: hostPage4,
   readCat,
   getName,
   setName,
   updateLast,
   searchName,
   notFound,
+  setDogName,
+  updateDogByName,
 };
