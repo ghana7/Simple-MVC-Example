@@ -12,13 +12,13 @@ const router = require('./router.js');
 
 const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
-const dbURL = process.env.MONGODB_URI || 'mongodb://localhost/simpleMVCExample';
+const dbURL = 'mongodb+srv://jeh4253:Chompy234@cluster0.v1gbq.mongodb.net/simpleModels';
 
 const mongooseOptions = {
-  useNewUrlParser: true, 
+  useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true,
-}
+};
 
 mongoose.connect(dbURL, mongooseOptions, (err) => {
   if (err) {
@@ -55,4 +55,3 @@ app.listen(port, (err) => {
   }
   console.log(`Listening on port ${port}`);
 });
-
